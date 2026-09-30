@@ -3,46 +3,49 @@
 
 echo "Oh my ears and whiskers! We are tumbling down the rabbit hole to build PixelOS 1.27!"
 
-# 1. Prepare the little pockets and folders
+# 1. Ask for the Queen's permission (sudo) upfront
+echo "Drink this little potion so you have the authority of the Queen of Hearts..."
+sudo -v
+
+# Keep the sudo magic alive in the background while the script runs!
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+# 2. Prepare the little pockets and folders
 echo "Creating cozy little burrows for your files..."
 mkdir -p ~/pixelos/images
 mkdir -p ~/Applications
 mkdir -p ~/.local/share/applications
 
-# 2. Fetch the magic looking-glass artifacts from GitHub
+# 3. Fetch the magic looking-glass artifacts from GitHub
 echo "Catching files from the magic GitHub tree..."
-# We will use the /tmp directory so we don't leave a mess for the White Rabbit!
+rm -rf /tmp/pixelos_repo # Sweeping the floor just in case we've been here before!
 git clone https://github.com/mattjslaunwhite/PixelOS.git /tmp/pixelos_repo
 cp -r /tmp/pixelos_repo/* ~/pixelos/images/ 2>/dev/null
 chmod -R 755 ~/pixelos
 
-# 3. Enable the extra magical repositories
+# 4. Enable the extra magical repositories
 echo "Painting the roses red with new repositories for codecs and browsers..."
-# Fetching RPM Fusion for the full media codecs
 sudo dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 
-# Fetching the Brave Browser map
 sudo dnf install -y dnf5-command\(config-manager\)
 sudo dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
 sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
 
-# 4. Drink the shrinking potion for media codecs
+# 5. Drink the shrinking potion for media codecs
 echo "Drinking the potion to understand all the moving pictures and sounds..."
 sudo dnf upgrade -y --refresh
-# Swap out the Queen's limited ffmpeg for the proper, full-sized one
 sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing
 sudo dnf group upgrade -y --with-optional Multimedia
 sudo dnf install -y gstreamer1-plugin-openh264 mozilla-openh264 gstreamer1-plugins-{bad-\*,good-\*,base} lame\* ffmpeg ffmpeg-libs
 
-# 5. Invite the guests: VLC, Brave, and Wireshark
+# 6. Invite the guests: VLC, Brave, and Wireshark
 echo "Inviting VLC, Brave, and the Packet-Sniffer to the tea party..."
 sudo dnf install -y vlc brave-browser wireshark wireshark-qt curl wget
 
-# To let Wireshark capture packets, you must have the Queen's permission!
 echo "Granting you permission to peer into the network traffic..."
 sudo usermod -aG wireshark $USER
 
-# 6. The Grand Masquerade: PixelOS 1.27 Branding
+# 7. The Grand Masquerade: PixelOS 1.27 Branding
 echo "Eating the 'Drink Me' cake to become PixelOS 1.27..."
 sudo hostnamectl set-hostname pixelos
 
@@ -71,15 +74,12 @@ fi
 echo "Stirring the teacup to apply the GRUB changes..."
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
-# 7. Hang the Looking-Glass Paintings (Wallpaper & Splash)
+# 8. Hang the Looking-Glass Paintings (Wallpaper & Splash)
 echo "Hanging the new wallpaper and painting the boot splash..."
-
-# Apply the KDE Wallpaper magically using plasma scripting
 if command -v plasma-apply-wallpaperimage &> /dev/null; then
     plasma-apply-wallpaperimage ~/pixelos/images/wallpaper.png
 fi
 
-# Build the custom Plymouth Splash
 THEME_DIR="/usr/share/plymouth/themes/pixelos"
 sudo mkdir -p "$THEME_DIR"
 sudo cp -r /usr/share/plymouth/themes/spinner/* "$THEME_DIR"/
@@ -87,25 +87,21 @@ sudo mv "$THEME_DIR"/spinner.plymouth "$THEME_DIR"/pixelos.plymouth
 sudo sed -i 's/Name=Spinner/Name=PixelOS/g' "$THEME_DIR"/pixelos.plymouth
 sudo sed -i 's/spinner/pixelos/g' "$THEME_DIR"/pixelos.plymouth
 
-# Place your custom bootsplash.png over the old watermarks
 if [ -f ~/pixelos/images/bootsplash.png ]; then
     sudo cp ~/pixelos/images/bootsplash.png "$THEME_DIR"/watermark.png
     sudo cp ~/pixelos/images/bootsplash.png "$THEME_DIR"/bgrt-fallback.png
 fi
 
-# Seal the magic into the initramfs
 sudo plymouth-set-default-theme -R pixelos
 
-# 8. Invite the Clever Language Models
+# 9. Invite the Clever Language Models
 echo "Inviting the clever models to the party..."
 cd ~/Applications
 
-# LM Studio AppImage
 echo "Fetching LM Studio..."
 wget -q --show-progress "https://lmstudio.ai/download/latest/linux/x64?format=AppImage" -O LM_Studio.AppImage
 chmod +x LM_Studio.AppImage
 
-# Painting a little desktop shortcut for LM Studio
 cat <<EOF > ~/.local/share/applications/lm-studio.desktop
 [Desktop Entry]
 Name=LM Studio
@@ -118,10 +114,20 @@ Terminal=false
 EOF
 update-desktop-database ~/.local/share/applications &> /dev/null || true
 
-# AnythingLLM Installer
 echo "Asking the Cheshire Cat for AnythingLLM..."
+# The installer for AnythingLLM runs quietly as your normal user
 curl -fsSL https://cdn.anythingllm.com/latest/installer.sh -o anything_installer.sh
 chmod +x anything_installer.sh
 ./anything_installer.sh
 
-echo "Curiouser and curiouser! Your looking-glass transformation is entirely complete. Simply restart the machine so all the magic settles into place!"
+echo "Curiouser and curiouser! Your looking-glass transformation is entirely complete!"
+echo "----------------------------------------------------------------"
+
+# 10. The Final Question
+read -p "Would you like to tumble down the rabbit hole and reboot now? (Highly recommended!) [y/N]: " REBOOT_ANSWER
+if [[ "$REBOOT_ANSWER" =~ ^[Yy]$ ]]; then
+    echo "Off with its head! Restarting the machine..."
+    sudo reboot
+else
+    echo "Very well! The magic is tucked away safely. It will take effect the next time you wake the system."
+fi
