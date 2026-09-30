@@ -5,7 +5,7 @@ Fork of PixelOS build off Fedora
 
 
 # To catch the file with curl
-curl -O https://raw.githubusercontent.com/mattjslaunwhite/PixelOS/main/pixel-installer.sh
+curl -O https://raw.githubusercontent.com/mattjslaunwhite/PixelOS/main/pixel-install.sh
 
 # Or, if you prefer wget to fetch it for you
-wget https://raw.githubusercontent.com/mattjslaunwhite/PixelOS/main/pixel-installer.sh
+wget https://raw.githubusercontent.com/mattjslaunwhite/PixelOS/main/pixel-install.sh
