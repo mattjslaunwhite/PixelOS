@@ -18,7 +18,7 @@ mkdir -p ~/.local/share/applications
 
 # 3. Fetch the magic looking-glass artifacts from GitHub
 echo "Catching files from the magic GitHub tree..."
-rm -rf /tmp/pixelos_repo # Sweeping the floor just in case we've been here before!
+rm -rf /tmp/pixelos_repo # Sweeping the floor just in case!
 git clone https://github.com/mattjslaunwhite/PixelOS.git /tmp/pixelos_repo
 cp -r /tmp/pixelos_repo/* ~/pixelos/images/ 2>/dev/null
 chmod -R 755 ~/pixelos
@@ -94,15 +94,25 @@ fi
 
 sudo plymouth-set-default-theme -R pixelos
 
-# 9. Invite the Clever Language Models
-echo "Inviting the clever models to the party..."
+# 9. Write the Post-Reboot AI Invitation
+echo "Leaving a little note on your desk to summon the AI later..."
+DESKTOP_DIR="$(xdg-user-dir DESKTOP 2>/dev/null || echo ~/Desktop)"
+mkdir -p "$DESKTOP_DIR"
+
+AI_SCRIPT="$DESKTOP_DIR/Invite_AI_Guests.sh"
+
+cat << EOF > "$AI_SCRIPT"
+#!/bin/bash
+echo "Ah, you are awake! Let us invite the clever language models to the party now..."
+
+mkdir -p ~/Applications
 cd ~/Applications
 
 echo "Fetching LM Studio..."
 wget -q --show-progress "https://lmstudio.ai/download/latest/linux/x64?format=AppImage" -O LM_Studio.AppImage
 chmod +x LM_Studio.AppImage
 
-cat <<EOF > ~/.local/share/applications/lm-studio.desktop
+cat << 'DESK' > ~/.local/share/applications/lm-studio.desktop
 [Desktop Entry]
 Name=LM Studio
 Exec=$HOME/Applications/LM_Studio.AppImage --no-sandbox
@@ -111,16 +121,21 @@ Type=Application
 Categories=Development;Science;
 Comment=Chat with local language models
 Terminal=false
-EOF
+DESK
 update-desktop-database ~/.local/share/applications &> /dev/null || true
 
 echo "Asking the Cheshire Cat for AnythingLLM..."
-# The installer for AnythingLLM runs quietly as your normal user
 curl -fsSL https://cdn.anythingllm.com/latest/installer.sh -o anything_installer.sh
 chmod +x anything_installer.sh
 ./anything_installer.sh
 
+echo "Curiouser and curiouser! All your AI guests have arrived! You may now delete this little note."
+EOF
+
+chmod +x "$AI_SCRIPT"
+
 echo "Curiouser and curiouser! Your looking-glass transformation is entirely complete!"
+echo "I have left a magic spell called 'Invite_AI_Guests.sh' on your desktop for after you wake up."
 echo "----------------------------------------------------------------"
 
 # 10. The Final Question
