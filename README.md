@@ -1,4 +1,4 @@
-<img width="1408" height="768" alt="logo" src="https://github.com/user-attachments/assets/18d5d903-8b1f-4a7c-9353-a06c72ea8ede" />
+<img width="1408" height="768" alt="logo" src="Images/bootsplash.png" />
 
 # PixelOS
 Fork of PixelOS build off Fedora
